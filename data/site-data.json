@@ -1,0 +1,121 @@
+{
+  "themes": {
+    "bio": {
+      "name": "Feyza",
+      "sub": "merkez",
+      "hex": "#FF9E45",
+      "ray": "#FFD84D",
+      "hot": "#FFF3D6",
+      "x": 455,
+      "y": 335,
+      "desc": "Mimarlık kökenli, teknoloji ve toplum meraklısı. Yaşar Holding'de yapay zekâ dönüşümü üzerine çalışıyorum; burada ise düşüncelerimin gökyüzünü buluyorsunuz."
+    },
+    "tek": {
+      "name": "Teknoloji & Yapay Zeka",
+      "sub": "tema",
+      "hex": "#A78BFA",
+      "hot": "#F4F0FF",
+      "x": 250,
+      "y": 160,
+      "desc": "Yapay zekâ, algoritmalar ve teknolojinin iç işleyişi — merakla, eleştirel bir gözle."
+    },
+    "ins": {
+      "name": "İnsan & Toplum",
+      "sub": "tema",
+      "hex": "#6EE7D8",
+      "hot": "#EAFFFB",
+      "x": 730,
+      "y": 245,
+      "desc": "Teknolojinin gündelik hayata, kuşaklara ve iş kültürüne dokunduğu her yer. Gen Z merceğiyle."
+    },
+    "eko": {
+      "name": "Ekonomi & Eşitlik",
+      "sub": "tema",
+      "hex": "#86EFAC",
+      "hot": "#F0FFF4",
+      "x": 295,
+      "y": 565,
+      "desc": "Emek, ücret, fırsat eşitliği ve otomasyonun ekonomik yüzü."
+    },
+    "tas": {
+      "name": "Tasarım & Estetik",
+      "sub": "tema",
+      "hex": "#F9A8D4",
+      "hot": "#FFF0F7",
+      "x": 645,
+      "y": 540,
+      "desc": "Tasarım düşüncesi, estetik ve oran — yakında: inovatif mimari yapılar, ekonominin tasarıma etkileri."
+    }
+  },
+  "plannedEdges": [
+    [
+      "eko",
+      "tas"
+    ]
+  ],
+  "typeLabels": {
+    "yazi": "Yazı",
+    "kitap": "Kitap",
+    "film": "Film",
+    "secki": "Seçki"
+  },
+  "portals": [
+    {
+      "label": "Substack",
+      "sub": "yazılarım",
+      "url": "https://kimsebanasormadi.substack.com/"
+    },
+    {
+      "label": "LinkedIn",
+      "sub": "profesyonel",
+      "url": "https://www.linkedin.com/in/feyza-dilara-okudurlar/"
+    }
+  ],
+  "items": [
+    {
+      "title": "Sevgili, Küçük, Kaotik Hikayem ve Muallak Bir Gelecek #1",
+      "type": "yazi",
+      "themes": [
+        "ins",
+        "tas"
+      ],
+      "link": "https://kimsebanasormadi.substack.com/p/sevgili-kucuk-kaotik-hikayem-ve-muallak",
+      "source": "substack",
+      "date": "2026-05-25"
+    },
+    {
+      "title": "Sevgili, Küçük, Kaotik Hikayem ve Muallak Bir Gelecek #2",
+      "type": "yazi",
+      "themes": [
+        "ins",
+        "eko"
+      ],
+      "link": "https://kimsebanasormadi.substack.com/p/sevgili-kucuk-kaotik-hikayem-ve-muallak-4aa",
+      "source": "substack",
+      "date": "2026-06-01"
+    },
+    {
+      "title": "Karşılaştırmaya karşı olunca... #3",
+      "type": "yazi",
+      "themes": [
+        "ins",
+        "eko"
+      ],
+      "link": "https://kimsebanasormadi.substack.com/p/karslastrmaya-kars-olunca-3",
+      "source": "substack",
+      "date": "2026-06-08"
+    },
+    {
+      "title": "Yapay Zeka, Düşünme Eyleminin Gücü ve Yaratıcılık Üzerine #4",
+      "type": "yazi",
+      "themes": [
+        "tek",
+        "ins"
+      ],
+      "link": "https://kimsebanasormadi.substack.com/p/yapay-zeka-dusunme-eyleminin-gucu",
+      "source": "substack",
+      "date": "2026-06-16",
+      "journey": true
+    }
+  ]
+}

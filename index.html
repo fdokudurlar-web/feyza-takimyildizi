@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feyza D. Okudurlar · Yıldız Kümesi</title>
+<meta name="description" content="Feyza D. Okudurlar'ın düşünce yıldız kümesi — teknoloji, insan, ekonomi ve tasarım üzerine yazılar, kitaplar, filmler.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,400&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header>
+  <div class="wordmark">
+    <h1>Feyza D. Okudurlar<em>.</em></h1>
+    <p>düşünce kümelerim</p>
+  </div>
+  <button class="journey-btn" id="journeyBtn" aria-pressed="false">✦ AI Journey</button>
+</header>
+
+<svg id="sky" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" aria-label="Tema yıldız kümesi haritası"></svg>
+
+<div id="tip" role="status"></div>
+
+<aside id="panel" aria-hidden="true">
+  <div class="panel-head">
+    <button class="panel-close" id="panelClose" aria-label="Kapat">×</button>
+    <div class="panel-eyebrow" id="panelEyebrow"></div>
+    <h2 id="panelTitle"></h2>
+    <p id="panelDesc"></p>
+    <a class="panel-page-link" id="panelPageLink" style="display:none">tema sayfasını aç →</a>
+  </div>
+  <div class="panel-body" id="panelBody"></div>
+</aside>
+
+<div id="legend"></div>
+<div id="hint">bir yıldıza dokun → bağlı olduğu temalara süz</div>
+
+<script src="assets/sky.js"></script>
+</body>
+</html>

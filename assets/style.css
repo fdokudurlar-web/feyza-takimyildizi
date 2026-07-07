@@ -1,0 +1,119 @@
+/* =========================================================
+   ORTAK STİL — hem gökyüzü (index) hem tema sayfaları.
+   Renk paleti :root'ta; tema renkleri JSON'daki hex'lerle
+   aynı tutulur (JS inline style ile basar).
+   ========================================================= */
+:root{
+  --sky-0:#070B1A; --sky-1:#0E1530; --sky-2:#141C3E;
+  --starlight:#F3EFE4; --ink-dim:#8B92B3;
+  --sun:#FF9E45; --tek:#A78BFA; --ins:#6EE7D8; --eko:#86EFAC; --tas:#F9A8D4; --gold:#F7C873;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:'Space Grotesk',sans-serif; color:var(--starlight);
+  background:radial-gradient(120% 90% at 50% 38%, var(--sky-2) 0%, var(--sky-1) 45%, var(--sky-0) 100%);
+  overflow:hidden;
+}
+header{position:fixed; top:0; left:0; right:0; padding:26px 34px; display:flex; justify-content:space-between; align-items:flex-start; z-index:20; pointer-events:none}
+.wordmark{pointer-events:auto}
+.wordmark a{text-decoration:none; color:inherit}
+.wordmark h1{font-family:'Fraunces',serif; font-weight:300; font-size:23px; letter-spacing:.04em}
+.wordmark h1 em{font-style:italic; font-weight:400}
+.wordmark p{font-size:12px; color:var(--ink-dim); letter-spacing:.22em; text-transform:uppercase; margin-top:4px}
+.journey-btn{
+  pointer-events:auto; font-family:'Space Grotesk',sans-serif; font-size:13px; letter-spacing:.08em;
+  color:var(--gold); background:transparent; border:1px solid rgba(247,200,115,.35);
+  border-radius:999px; padding:9px 18px; cursor:pointer; transition:all .25s;
+}
+.journey-btn:hover,.journey-btn:focus-visible{background:rgba(247,200,115,.12); border-color:var(--gold); outline:none}
+.journey-btn.active{background:var(--gold); color:#3a2b08; border-color:var(--gold)}
+#sky{position:fixed; inset:0; width:100%; height:100%}
+.hub{cursor:pointer; outline:none}
+.hub:hover .halo,.hub:focus-visible .halo{opacity:.95}
+.hub:focus-visible .core{stroke:#fff; stroke-width:1}
+.hub-label{font-family:'Fraunces',serif; font-size:19px; font-weight:500; fill:var(--starlight); letter-spacing:.03em}
+.hub-sub{font-size:10.5px; fill:var(--ink-dim); letter-spacing:.18em; text-transform:uppercase}
+.item-star{cursor:pointer; transition:opacity .35s}
+.dimmed{opacity:.1; pointer-events:none}
+.thread{transition:opacity .25s, stroke-width .25s; pointer-events:none}
+.edge{transition:opacity .35s}
+@media (prefers-reduced-motion: no-preference){
+  .twinkle{animation:tw 3.4s ease-in-out infinite}
+  @keyframes tw{0%,100%{opacity:var(--o,.8)}50%{opacity:.15}}
+  .pulse{animation:pl 2.8s ease-in-out infinite}
+  @keyframes pl{0%,100%{opacity:.9}50%{opacity:.45}}
+  .breathe{animation:br 5s ease-in-out infinite}
+  @keyframes br{0%,100%{opacity:.55}50%{opacity:.3}}
+  .sunbreathe{animation:sb 6s ease-in-out infinite}
+  @keyframes sb{0%,100%{opacity:.8}50%{opacity:.55}}
+  .journey-path{stroke-dasharray:6 8; animation:dash 26s linear infinite}
+  @keyframes dash{to{stroke-dashoffset:-560}}
+}
+#tip{position:fixed; z-index:30; pointer-events:none; background:rgba(12,18,40,.92); border:1px solid rgba(243,239,228,.14);
+  border-radius:10px; padding:9px 13px; font-size:13px; max-width:250px; opacity:0; transition:opacity .15s; backdrop-filter:blur(6px)}
+#tip .tt-type{font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-dim); margin-bottom:3px}
+#panel{
+  position:fixed; top:0; right:0; bottom:0; width:min(400px,100%); z-index:25;
+  background:linear-gradient(180deg, rgba(12,18,40,.96), rgba(7,11,26,.97));
+  border-left:1px solid rgba(243,239,228,.1); backdrop-filter:blur(14px);
+  transform:translateX(102%); transition:transform .38s cubic-bezier(.2,.8,.2,1);
+  display:flex; flex-direction:column;
+}
+#panel.open{transform:translateX(0)}
+.panel-head{padding:30px 30px 20px; border-bottom:1px solid rgba(243,239,228,.08); position:relative}
+.panel-eyebrow{font-size:10.5px; letter-spacing:.24em; text-transform:uppercase; color:var(--ink-dim); display:flex; align-items:center; gap:8px}
+.panel-eyebrow .dot{width:8px; height:8px; border-radius:50%}
+.panel-head h2{font-family:'Fraunces',serif; font-weight:500; font-size:25px; margin-top:10px; line-height:1.2}
+.panel-head p{font-size:13.5px; color:var(--ink-dim); margin-top:8px; line-height:1.55}
+.panel-page-link{display:inline-block; margin-top:12px; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--gold); text-decoration:none; border-bottom:1px solid rgba(247,200,115,.35); padding-bottom:2px}
+.panel-page-link:hover{border-color:var(--gold)}
+.panel-close{position:absolute; top:20px; right:20px; background:none; border:none; color:var(--ink-dim); font-size:22px; cursor:pointer; padding:6px; line-height:1}
+.panel-close:hover{color:var(--starlight)}
+.panel-body{overflow-y:auto; padding:14px 22px 30px; flex:1}
+.item-card{display:block; text-decoration:none; color:inherit; padding:15px 14px; border-radius:12px; border:1px solid transparent; transition:all .2s; margin-bottom:4px}
+.item-card:hover{background:rgba(243,239,228,.05); border-color:rgba(243,239,228,.1)}
+.item-card .ic-type{font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-dim)}
+.item-card .ic-title{font-size:15.5px; margin-top:4px; line-height:1.4}
+.item-card .ic-themes{display:flex; gap:6px; margin-top:8px; align-items:center}
+.item-card .ic-themes span{width:7px; height:7px; border-radius:50%}
+.item-card .ic-themes small{font-size:10.5px; color:var(--ink-dim); letter-spacing:.06em}
+.bio-links{display:flex; flex-direction:column; gap:10px; margin-top:18px}
+.bio-links a{display:flex; justify-content:space-between; align-items:center; text-decoration:none; color:var(--starlight);
+  border:1px solid rgba(243,239,228,.16); border-radius:12px; padding:14px 18px; font-size:14.5px; transition:all .2s}
+.bio-links a:hover{border-color:var(--sun); background:rgba(255,158,69,.08)}
+.bio-links a small{color:var(--ink-dim); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+#legend{position:fixed; left:34px; bottom:28px; z-index:20; font-size:11.5px; color:var(--ink-dim); display:flex; gap:18px; letter-spacing:.05em}
+#legend span{display:flex; align-items:center; gap:6px}
+#legend svg{width:12px; height:12px; overflow:visible}
+#hint{position:fixed; right:34px; bottom:28px; z-index:20; font-size:11.5px; color:var(--ink-dim); letter-spacing:.05em}
+@media (max-width:640px){
+  header{padding:18px 20px}
+  .wordmark h1{font-size:18px}
+  #legend{left:20px; bottom:18px; flex-wrap:wrap; gap:10px 14px; max-width:60%}
+  #hint{display:none}
+  .hub-label{font-size:16px}
+}
+
+/* =========================================================
+   TEMA SAYFASI — tema/<id>.html; body.theme-page ile açılır.
+   Gökyüzündeki panel kartlarıyla aynı görsel dili kullanır.
+   ========================================================= */
+body.theme-page{overflow:auto}
+.tp-wrap{max-width:720px; margin:0 auto; padding:130px 26px 90px}
+.tp-eyebrow{font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--ink-dim); display:flex; align-items:center; gap:9px}
+.tp-eyebrow .dot{width:9px; height:9px; border-radius:50%}
+.tp-wrap h2{font-family:'Fraunces',serif; font-weight:500; font-size:clamp(28px,5vw,40px); margin-top:14px; line-height:1.15}
+.tp-desc{font-size:15px; color:var(--ink-dim); margin-top:12px; line-height:1.6; max-width:56ch}
+.tp-count{font-size:11.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-dim); margin:34px 0 10px}
+.tp-wrap .item-card{border-color:rgba(243,239,228,.08); margin-bottom:10px; padding:18px 18px}
+.tp-wrap .item-card:hover{border-color:rgba(243,239,228,.22)}
+.tp-back{display:inline-block; margin-top:36px; font-size:13px; color:var(--gold); text-decoration:none;
+  border:1px solid rgba(247,200,115,.35); border-radius:999px; padding:9px 18px; transition:all .25s}
+.tp-back:hover{background:rgba(247,200,115,.12); border-color:var(--gold)}
+.tp-other-themes{display:flex; gap:10px; flex-wrap:wrap; margin-top:44px}
+.tp-other-themes a{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink-dim); text-decoration:none;
+  border:1px solid rgba(243,239,228,.12); border-radius:999px; padding:7px 14px; transition:all .2s}
+.tp-other-themes a:hover{color:var(--starlight); border-color:rgba(243,239,228,.3)}
+.tp-other-themes a i{width:7px; height:7px; border-radius:50%; display:inline-block}
