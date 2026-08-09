@@ -60,35 +60,58 @@ const data = JSON.parse(readFileSync(DATA_PATH, 'utf8'));
 const known = new Set(data.items.map(it => it.link));
 
 /* Substack, Cloudflare bot koruması arkasında. GitHub Actions'ın
-   veri merkezi IP'lerinden gelen "bot" görünümlü istekler 403 ile
-   engellenebiliyor; bu yüzden gerçek bir tarayıcı User-Agent'ı ve
-   birkaç kez tekrar deneme kullanıyoruz. */
+   veri merkezi IP'lerinden gelen istekler — tarayıcı User-Agent'ı
+   kullansak bile — IP itibarı yüzünden 403 ile engelleniyor.
+   Çözüm: beslemeyi önce doğrudan dene; olmazsa sunucu-taraflı
+   proxy'ler üzerinden çek. Proxy, Substack'e kendi IP'sinden
+   gittiği için GitHub'ın engellenen IP'si devreden çıkar. */
 const FETCH_HEADERS = {
   'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
   'accept': 'application/rss+xml, application/xml, text/xml, */*',
   'accept-language': 'tr-TR,tr;q=0.9,en;q=0.8'
 };
 
-async function fetchFeed(url, tries = 4){
+/* Sırayla denenecek kaynaklar: doğrudan + birkaç ücretsiz proxy.
+   Biri düşer/engellenirse bir sonraki denenir. */
+const SOURCES = [
+  { name: 'doğrudan',   url: FEED_URL },
+  { name: 'allorigins', url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(FEED_URL) },
+  { name: 'corsproxy',  url: 'https://corsproxy.io/?url=' + encodeURIComponent(FEED_URL) },
+  { name: 'jina',       url: 'https://r.jina.ai/' + FEED_URL }
+];
+
+/* Gerçekten RSS mi aldık, yoksa Cloudflare engel sayfası mı? */
+function looksLikeFeed(txt){ return typeof txt === 'string' && txt.includes('<item>'); }
+
+async function fetchOnce(url){
+  const res = await fetch(url, { headers: FETCH_HEADERS });
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.text();
+}
+
+async function fetchFeed(){
   let lastErr = '';
-  for(let i = 1; i <= tries; i++){
-    try {
-      const res = await fetch(url, { headers: FETCH_HEADERS });
-      if(res.ok) return await res.text();
-      lastErr = `HTTP ${res.status}`;
-      /* 403/429/503 = Cloudflare engeli; kısa bekleyip tekrar dene */
-      console.error(`RSS denemesi ${i}/${tries} başarısız: ${lastErr}`);
-    } catch(e){
-      lastErr = e.message;
-      console.error(`RSS denemesi ${i}/${tries} hata: ${lastErr}`);
+  for(const src of SOURCES){
+    for(let i = 1; i <= 2; i++){       /* kaynak başına 2 deneme */
+      try {
+        const txt = await fetchOnce(src.url);
+        if(looksLikeFeed(txt)){
+          console.log(`RSS alındı: ${src.name}`);
+          return txt;
+        }
+        lastErr = 'geçersiz içerik (RSS değil)';
+      } catch(e){
+        lastErr = e.message;
+      }
+      console.error(`  ${src.name} denemesi ${i}/2 başarısız: ${lastErr}`);
+      if(i < 2) await new Promise(r => setTimeout(r, 2000));
     }
-    if(i < tries) await new Promise(r => setTimeout(r, i * 3000));
   }
-  console.error(`RSS alınamadı (${tries} deneme): ${lastErr}`);
+  console.error(`RSS hiçbir kaynaktan alınamadı. Son hata: ${lastErr}`);
   process.exit(1);
 }
 
-const xml = await fetchFeed(FEED_URL);
+const xml = await fetchFeed();
 const feedItems = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map(m => m[1]);
 console.log(`RSS'te ${feedItems.length} yazı bulundu.`);
 
