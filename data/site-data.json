@@ -116,6 +116,17 @@
       "source": "substack",
       "date": "2026-06-16",
       "journey": true
+    },
+    {
+      "title": "Yapay Zekâ, Sanatın Önemi, Bireysellik ve Pluribus Dizisi",
+      "type": "yazi",
+      "themes": [
+        "tek",
+        "tas"
+      ],
+      "link": "https://kimsebanasormadi.substack.com/p/yapay-zeka-sanatn-onemi-bireysellik",
+      "source": "substack",
+      "date": "2026-07-19"
     }
   ]
 }
