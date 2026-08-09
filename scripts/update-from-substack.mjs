@@ -59,12 +59,36 @@ function guessThemes(text){
 const data = JSON.parse(readFileSync(DATA_PATH, 'utf8'));
 const known = new Set(data.items.map(it => it.link));
 
-const res = await fetch(FEED_URL, { headers: { 'user-agent': 'takimyildizi-sync/1.0' } });
-if(!res.ok){
-  console.error(`RSS alınamadı: HTTP ${res.status}`);
+/* Substack, Cloudflare bot koruması arkasında. GitHub Actions'ın
+   veri merkezi IP'lerinden gelen "bot" görünümlü istekler 403 ile
+   engellenebiliyor; bu yüzden gerçek bir tarayıcı User-Agent'ı ve
+   birkaç kez tekrar deneme kullanıyoruz. */
+const FETCH_HEADERS = {
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+  'accept': 'application/rss+xml, application/xml, text/xml, */*',
+  'accept-language': 'tr-TR,tr;q=0.9,en;q=0.8'
+};
+
+async function fetchFeed(url, tries = 4){
+  let lastErr = '';
+  for(let i = 1; i <= tries; i++){
+    try {
+      const res = await fetch(url, { headers: FETCH_HEADERS });
+      if(res.ok) return await res.text();
+      lastErr = `HTTP ${res.status}`;
+      /* 403/429/503 = Cloudflare engeli; kısa bekleyip tekrar dene */
+      console.error(`RSS denemesi ${i}/${tries} başarısız: ${lastErr}`);
+    } catch(e){
+      lastErr = e.message;
+      console.error(`RSS denemesi ${i}/${tries} hata: ${lastErr}`);
+    }
+    if(i < tries) await new Promise(r => setTimeout(r, i * 3000));
+  }
+  console.error(`RSS alınamadı (${tries} deneme): ${lastErr}`);
   process.exit(1);
 }
-const xml = await res.text();
+
+const xml = await fetchFeed(FEED_URL);
 const feedItems = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map(m => m[1]);
 console.log(`RSS'te ${feedItems.length} yazı bulundu.`);
 
