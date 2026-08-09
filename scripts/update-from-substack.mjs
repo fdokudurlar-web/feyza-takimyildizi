@@ -59,47 +59,75 @@ function guessThemes(text){
 const data = JSON.parse(readFileSync(DATA_PATH, 'utf8'));
 const known = new Set(data.items.map(it => it.link));
 
-/* Substack, Cloudflare bot koruması arkasında. GitHub Actions'ın
-   veri merkezi IP'lerinden gelen istekler — tarayıcı User-Agent'ı
-   kullansak bile — IP itibarı yüzünden 403 ile engelleniyor.
-   Çözüm: beslemeyi önce doğrudan dene; olmazsa sunucu-taraflı
-   proxy'ler üzerinden çek. Proxy, Substack'e kendi IP'sinden
-   gittiği için GitHub'ın engellenen IP'si devreden çıkar. */
+/* Substack, Cloudflare bot koruması arkasında ve GitHub Actions'ın
+   veri merkezi IP'lerini — tarayıcı User-Agent'ı kullansak bile —
+   IP itibarı yüzünden HTTP 403 ile engelliyor. (Ücretsiz CORS
+   proxy'leri de artık ya kapalı ya anahtar istiyor.)
+
+   Çözüm iki kaynaklı:
+   1) DOĞRUDAN besleme (XML) — senin makinen gibi normal IP'lerde
+      çalışır; hızlı ve bağımsızdır.
+   2) rss2json — beslemeyi KENDİ sunucusundan çekip JSON döner.
+      İstek Substack'e GitHub'ın IP'siyle gitmediği için Cloudflare
+      engeli devreden çıkar; CI'da güvenilir çalışan yol budur.
+   Her iki kaynak da tek tip {title, link, pubDate, summary}
+   listesine normalize edilir. */
 const FETCH_HEADERS = {
-  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-  'accept': 'application/rss+xml, application/xml, text/xml, */*',
+  'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+  'accept': 'application/rss+xml, application/xml, text/xml, application/json, */*',
   'accept-language': 'tr-TR,tr;q=0.9,en;q=0.8'
 };
 
-/* Sırayla denenecek kaynaklar: doğrudan + birkaç ücretsiz proxy.
-   Biri düşer/engellenirse bir sonraki denenir. */
-const SOURCES = [
-  { name: 'doğrudan',   url: FEED_URL },
-  { name: 'allorigins', url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(FEED_URL) },
-  { name: 'corsproxy',  url: 'https://corsproxy.io/?url=' + encodeURIComponent(FEED_URL) },
-  { name: 'jina',       url: 'https://r.jina.ai/' + FEED_URL }
-];
-
-/* Gerçekten RSS mi aldık, yoksa Cloudflare engel sayfası mı? */
-function looksLikeFeed(txt){ return typeof txt === 'string' && txt.includes('<item>'); }
-
-async function fetchOnce(url){
+async function fetchText(url){
   const res = await fetch(url, { headers: FETCH_HEADERS });
   if(!res.ok) throw new Error(`HTTP ${res.status}`);
   return await res.text();
 }
 
-async function fetchFeed(){
+/* Kaynak 1 — doğrudan RSS (XML) */
+async function fromDirect(){
+  const xml = await fetchText(FEED_URL);
+  if(!xml.includes('<item>')) throw new Error('RSS değil (muhtemel engel sayfası)');
+  return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map(m => {
+    const b = m[1];
+    return {
+      title: tag(b, 'title'),
+      link: tag(b, 'link'),
+      pubDate: tag(b, 'pubDate'),
+      summary: tag(b, 'description').replace(/<[^>]+>/g, ' ')
+    };
+  });
+}
+
+/* Kaynak 2 — rss2json (JSON); anahtar gerektirmez */
+async function fromRss2json(){
+  const url = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(FEED_URL);
+  const j = JSON.parse(await fetchText(url));
+  if(j.status !== 'ok' || !Array.isArray(j.items)) throw new Error(`rss2json status=${j.status}`);
+  return j.items.map(it => ({
+    title: decodeEntities(String(it.title || '')),
+    link: String(it.link || it.guid || ''),
+    pubDate: String(it.pubDate || ''),
+    summary: decodeEntities(String(it.description || '')).replace(/<[^>]+>/g, ' ')
+  }));
+}
+
+const SOURCES = [
+  { name: 'doğrudan', get: fromDirect },
+  { name: 'rss2json', get: fromRss2json }
+];
+
+async function getFeedItems(){
   let lastErr = '';
   for(const src of SOURCES){
     for(let i = 1; i <= 2; i++){       /* kaynak başına 2 deneme */
       try {
-        const txt = await fetchOnce(src.url);
-        if(looksLikeFeed(txt)){
-          console.log(`RSS alındı: ${src.name}`);
-          return txt;
+        const items = await src.get();
+        if(items.length){
+          console.log(`RSS alındı: ${src.name} (${items.length} yazı)`);
+          return items;
         }
-        lastErr = 'geçersiz içerik (RSS değil)';
+        lastErr = '0 öğe döndü';
       } catch(e){
         lastErr = e.message;
       }
@@ -111,19 +139,22 @@ async function fetchFeed(){
   process.exit(1);
 }
 
-const xml = await fetchFeed();
-const feedItems = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map(m => m[1]);
-console.log(`RSS'te ${feedItems.length} yazı bulundu.`);
+/* iki kaynağın tarih biçimi farklı: doğrudan XML "Sun, 19 Jul 2026
+   14:20:39 GMT", rss2json "2026-07-19 14:20:39". İkisini de çöz. */
+function toDate(pub){
+  if(!pub) return undefined;
+  const d = new Date(/GMT|T|Z/.test(pub) ? pub : pub.replace(' ', 'T'));
+  return isNaN(+d) ? undefined : d.toISOString().slice(0, 10);
+}
+
+const feedItems = await getFeedItems();
 
 let added = 0;
 /* feed en-yeni-önce gelir; kronoloji bozulmasın diye ters çevirip sona ekliyoruz */
-for(const block of feedItems.reverse()){
-  const link = tag(block, 'link');
-  const title = tag(block, 'title');
+for(const it of feedItems.reverse()){
+  const { title, link, summary } = it;
   if(!link || !title || known.has(link)) continue;
-  const summary = tag(block, 'description').replace(/<[^>]+>/g, ' ');
-  const pub = tag(block, 'pubDate');
-  const date = pub ? new Date(pub).toISOString().slice(0, 10) : undefined;
+  const date = toDate(it.pubDate);
   const item = {
     title,
     type: 'yazi',
